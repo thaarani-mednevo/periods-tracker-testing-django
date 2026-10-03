@@ -14,7 +14,7 @@ import { OnboardingFlow } from "./Features/onboardingFlow/OnboardingFlow";
 import { submitOnboardingProfile } from "./services/onboarding";
 import type { OnboardingData, StepId } from "./types";
 import { INITIAL_DATA } from "./constants";
-import { LoginPage, SignupPage, ForgotPasswordPage } from "./Features/auth/AuthPages";
+import { LoginPage, SignupPage } from "./Features/auth/AuthPages";
 import { clearAuth, getAuth, saveAuth } from "./lib/auth";
 import { logout, me, type AuthResult } from "./services/auth";
 import { getProfile } from "./services/settings";
@@ -29,8 +29,7 @@ export type View =
   | { name: "settings"; data: OnboardingData }
   | { name: "trends"; data: OnboardingData }
   | { name: "login" }
-  | { name: "signup" }
-  | { name: "forgot" };
+  | { name: "signup" };
 
 export default function App() {
   const [view, setView] = useState<View>(() => {
@@ -158,18 +157,10 @@ export default function App() {
     if (!auth) {
     if (view.name === "signup")
       return <SignupPage onAuth={handleAuth} onLogin={() => open({ name: "login" })} />;
-    if (view.name === "forgot")
-      return <ForgotPasswordPage onBack={() => open({ name: "login" })} />;
-    return (
-      <LoginPage
-        onAuth={handleAuth}
-        onSignup={() => open({ name: "signup" })}
-        onForgot={() => open({ name: "forgot" })}
-      />
-    );
+    return <LoginPage onAuth={handleAuth} onSignup={() => open({ name: "signup" })} />;
   }
 
-  if (view.name === "welcome" || view.name === "login" || view.name === "signup" || view.name === "forgot") {
+  if (view.name === "welcome" || view.name === "login" || view.name === "signup") {
     return <WelcomePage onGetStarted={startSetup} progress={progress} onResume={resumeSetup} onStartOver={startOver} />;
   }
 

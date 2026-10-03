@@ -150,8 +150,8 @@ STATIC_URL = 'static/'
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "no-reply@localhost"
+#EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+#DEFAULT_FROM_EMAIL = "no-reply@localhost"
 
 # Groq (phase insights). Key comes from the environment / .env, never from source control.
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")

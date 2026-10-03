@@ -1,8 +1,6 @@
-import { useEffect, useState, type FormEvent, type InputHTMLAttributes, type ReactNode } from "react";
+import { useState, type FormEvent, type InputHTMLAttributes, type ReactNode } from "react";
 import { ApiError } from "../../services/api/client";
-import {
-  forgotPassword, login, resetPassword, signup, verifyOtp, type AuthResult,
-} from "../../services/auth";
+import { login, signup, type AuthResult } from "../../services/auth";
 
 const btn =
   "w-full rounded-full bg-rose px-6 py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-60";
@@ -60,7 +58,7 @@ const ErrorText = ({ text }: { text: string }) =>
   text ? <p role="alert" className="text-sm text-red-600">{text}</p> : null;
 
 /* ---------------- Login ---------------- */
-export function LoginPage(props: { onAuth: (r: AuthResult) => void; onSignup: () => void; onForgot: () => void }) {
+export function LoginPage(props: { onAuth: (r: AuthResult) => void; onSignup: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { busy, error, run } = useForm();
@@ -78,10 +76,7 @@ export function LoginPage(props: { onAuth: (r: AuthResult) => void; onSignup: ()
         <ErrorText text={error} />
         <button className={btn} disabled={busy}>{busy ? "Logging in…" : "Log in"}</button>
       </form>
-      <div className="flex justify-between">
-        <button type="button" className={linkBtn} onClick={props.onForgot}>Forgot password?</button>
-        <button type="button" className={linkBtn} onClick={props.onSignup}>Create account</button>
-      </div>
+      <button type="button" className={linkBtn} onClick={props.onSignup}>New here? Create account</button>
     </Shell>
   );
 }
@@ -108,90 +103,6 @@ export function SignupPage(props: { onAuth: (r: AuthResult) => void; onLogin: ()
         <button className={btn} disabled={busy}>{busy ? "Creating…" : "Sign up"}</button>
       </form>
       <button type="button" className={linkBtn} onClick={props.onLogin}>Already have an account? Log in</button>
-    </Shell>
-  );
-}
-
-/* ---------------- Forgot password (email -> OTP -> new password) ---------------- */
-export function ForgotPasswordPage({ onBack }: { onBack: () => void }) {
-  const [step, setStep] = useState<"email" | "otp" | "reset" | "done">("email");
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [resetToken, setResetToken] = useState("");
-  const [password, setPassword] = useState("");
-  const [cooldown, setCooldown] = useState(0);
-  const { busy, error, fields, run } = useForm();
-
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
-    return () => clearTimeout(t);
-  }, [cooldown]);
-
-  const sendOtp = (e?: FormEvent) => {
-    e?.preventDefault();
-    void run(async () => {
-      await forgotPassword(email);
-      setStep("otp");
-      setCooldown(60);
-    });
-  };
-  const checkOtp = (e: FormEvent) => {
-    e.preventDefault();
-    void run(async () => {
-      const r = await verifyOtp(email, otp);
-      setResetToken(r.resetToken);
-      setStep("reset");
-    });
-  };
-  const savePassword = (e: FormEvent) => {
-    e.preventDefault();
-    void run(async () => {
-      await resetPassword(resetToken, password);
-      setStep("done");
-    });
-  };
-
-  if (step === "email")
-    return (
-      <Shell title="Forgot password" subtitle="Enter your account email. We'll send a 6-digit OTP.">
-        <form onSubmit={sendOtp} className="space-y-4">
-          <Field label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-          <ErrorText text={error} />
-          <button className={btn} disabled={busy}>{busy ? "Sending…" : "Send OTP"}</button>
-        </form>
-        <button type="button" className={linkBtn} onClick={onBack}>Back to login</button>
-      </Shell>
-    );
-
-  if (step === "otp")
-    return (
-      <Shell title="Enter OTP" subtitle={`If an account exists for ${email}, an OTP was sent. Valid for 10 minutes.`}>
-        <form onSubmit={checkOtp} className="space-y-4">
-          <Field label="6-digit OTP" inputMode="numeric" maxLength={6} required value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))} />
-          <ErrorText text={error} />
-          <button className={btn} disabled={busy || otp.length !== 6}>{busy ? "Verifying…" : "Verify OTP"}</button>
-        </form>
-        <button type="button" className={linkBtn} disabled={cooldown > 0 || busy} onClick={() => sendOtp()}>
-          {cooldown > 0 ? `Resend OTP in ${cooldown}s` : "Resend OTP"}
-        </button>
-      </Shell>
-    );
-
-  if (step === "reset")
-    return (
-      <Shell title="New password" subtitle="Choose a new password for your account.">
-        <form onSubmit={savePassword} className="space-y-4">
-          <Field label="New password" type="password" autoComplete="new-password" required value={password} onChange={(e) => setPassword(e.target.value)} errors={fields.password} />
-          {!Object.keys(fields).length && <ErrorText text={error} />}
-          <button className={btn} disabled={busy}>{busy ? "Saving…" : "Update password"}</button>
-        </form>
-      </Shell>
-    );
-
-  return (
-    <Shell title="Password updated" subtitle="You can log in with your new password now.">
-      <button className={btn} onClick={onBack}>Go to login</button>
     </Shell>
   );
 }

@@ -28,7 +28,7 @@ interface RequestOptions {
   signal?: AbortSignal;
 }
 
-/** The backend knows who you are from the session cookie set at onboarding, so no id is sent. */
+/** The logged-in user is identified by the auth token sent in the Authorization header. */
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const baseUrl = getBaseUrl();
   if (!baseUrl) throw new ApiError("API base URL is not configured (VITE_API_BASE_URL).", 0, "CONFIG");

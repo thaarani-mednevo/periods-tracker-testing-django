@@ -1,0 +1,12 @@
+# Backend dependencies (versions taken from your venv)
+Django==6.1.1
+djangorestframework==3.18.1
+django-cors-headers==4.9.0
+python-dotenv==1.2.3
+groq==1.7.0
+psycopg2-binary==2.9.13
+
+# Optional (deploy / dev tools). Uncomment only when needed:
+# gunicorn>=22.0
+# whitenoise>=6.7
+# ruff>=0.6

@@ -127,7 +127,7 @@ def call_groq(facts: dict, journey: str = "cycle_tracking") -> dict:
     resp = client.chat.completions.create(
         model=settings.GROQ_MODEL,
         temperature=0.4,
-        max_tokens=400,
+        max_tokens=1000,
         response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": system_prompt(journey)},

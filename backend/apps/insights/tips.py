@@ -131,7 +131,7 @@ def call_groq_tips(payload: dict, journey: str) -> dict:
     resp = client.chat.completions.create(
         model=settings.GROQ_MODEL,
         temperature=0.5,
-        max_tokens=600,
+        max_tokens=1500,
         response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": system_prompt(journey)},

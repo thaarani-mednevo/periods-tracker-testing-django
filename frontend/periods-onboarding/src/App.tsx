@@ -13,7 +13,7 @@ import { clearProgress, loadProgress, type OnboardingProgress } from "./lib/prog
 import { OnboardingFlow } from "./Features/onboardingFlow/OnboardingFlow";
 import { submitOnboardingProfile } from "./services/onboarding";
 import type { OnboardingData, StepId } from "./types";
-
+import { INITIAL_DATA } from "./constants";
 import { LoginPage, SignupPage, ForgotPasswordPage } from "./Features/auth/AuthPages";
 import { clearAuth, getAuth, saveAuth } from "./lib/auth";
 import { logout, me, type AuthResult } from "./services/auth";
@@ -122,11 +122,17 @@ export default function App() {
     open({ name: "login" });
   };
 
+  // Signup la kudutha name-ah Step 1 la prefill pannum (Name field max 40 chars)
+  const freshData = (): OnboardingData => ({
+    ...INITIAL_DATA,
+    name: (getAuth()?.user.name ?? "").slice(0, 40),
+  });
+
   const startSetup = () => {
     startNewDevPatient(); // dev: every new setup is a new patient
     clearProgress();
     setProgress(null);
-    open({ name: "onboarding", step: 1 });
+    open({ name: "onboarding", step: 1, data: freshData() });
   };
 
   const resumeSetup = () => {
@@ -138,7 +144,7 @@ export default function App() {
     startNewDevPatient();
     clearProgress();
     setProgress(null);
-    open({ name: "onboarding", step: 1 });
+    open({ name: "onboarding", step: 1, data: freshData() });
   };
 
   const handleStepChange = useCallback((step: StepId, currentData: OnboardingData) => {

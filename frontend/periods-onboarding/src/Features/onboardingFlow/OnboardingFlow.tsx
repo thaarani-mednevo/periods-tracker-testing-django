@@ -116,10 +116,10 @@ export function OnboardingFlow({ onComplete, onStepChange, initialData = INITIAL
   // saving it would offer to "resume" a journey with no answers in it.
   useEffect(() => {
     if (phase !== "form") return;
-    const untouched = step === 1 && completed.size === 0 && data === INITIAL_DATA;
+    const untouched = step === 1 && completed.size === 0 && data === initialData;
     if (untouched) return;
     saveProgress(step, [...completed], data);
-  }, [step, completed, data, phase]);
+  }, [step, completed, data, phase, initialData]);
 
   const errors = useMemo(() => (attempted.has(step) ? validateStep(step, data) : {}), [attempted, step, data]);
 

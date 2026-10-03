@@ -1,0 +1,59 @@
+@theme {
+  --color-lu-ink: #1b1b2f;
+  --color-lu-ink-soft: #4b5563;
+  --color-lu-ink-muted: #6b7280;
+  --color-lu-ink-faint: #6f7581;
+  --color-lu-brand: #ec4899;
+  --color-lu-brand-strong: #db2777;
+  --color-lu-brand-soft: #fce7f3;
+  --color-lu-brand-tint: #fff5fa;
+  --color-lu-brand-line: #f8d3e4;
+  --color-lu-line: #eef0f4;
+
+  --text-lu-display: clamp(1.75rem, 1.3rem + 1.15vw, 2.5rem);
+  --text-lu-display--line-height: 1.1;
+  --text-lu-title: clamp(1.125rem, 1rem + 0.45vw, 1.5rem);
+  --text-lu-title--line-height: 1.2;
+  --text-lu-heading: clamp(0.9375rem, 0.88rem + 0.2vw, 1.0625rem);
+  --text-lu-heading--line-height: 1.3;
+  --text-lu-body: clamp(0.875rem, 0.85rem + 0.12vw, 0.9375rem);
+  --text-lu-body--line-height: 1.55;
+  --text-lu-label: clamp(0.8125rem, 0.8rem + 0.06vw, 0.875rem);
+  --text-lu-label--line-height: 1.4;
+  --text-lu-caption: clamp(0.6875rem, 0.67rem + 0.08vw, 0.75rem);
+  --text-lu-caption--line-height: 1.4;
+  --text-lu-micro: clamp(0.5625rem, 0.45rem + 0.6vw, 0.75rem);
+  --text-lu-micro--line-height: 1.25;
+  --text-lu-numeral: clamp(0.875rem, 0.78rem + 0.35vw, 1.0625rem);
+  --text-lu-numeral--line-height: 1;
+
+  --shadow-lu-card: 0 12px 32px -14px rgba(236, 72, 153, 0.16), 0 2px 6px rgba(17, 24, 39, 0.04);
+  --shadow-lu-pill: 0 2px 8px rgba(17, 24, 39, 0.06);
+  --shadow-lu-glow: 0 10px 24px -8px rgba(236, 72, 153, 0.55);
+  --shadow-lu-soft: 0 6px 20px -10px rgba(17, 24, 39, 0.12);
+  --radius-lu-card: clamp(16px, 1.3vw, 22px);
+  --spacing-lu-grid: clamp(12px, 1.2vw, 20px);
+  --spacing-lu-card: clamp(14px, 1.2vw, 22px);
+}
+
+.lu-card {
+  border-radius: var(--radius-lu-card);
+  border: 1px solid var(--color-lu-line);
+  background: #fff;
+  box-shadow: var(--shadow-lu-card);
+}
+
+.lu-card-pink {
+  border-radius: var(--radius-lu-card);
+  border: 1px solid var(--color-lu-brand-line);
+  box-shadow: var(--shadow-lu-card);
+  background: linear-gradient(180deg, #fff6fa 0%, #ffffff 100%);
+}
+
+.lu-no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.lu-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

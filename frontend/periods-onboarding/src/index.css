@@ -1,0 +1,468 @@
+@import "tailwindcss";
+@import "./styles/phaseUi.css";
+
+/* Viewport-height variants for the fixed, no-scroll onboarding screen. */
+@custom-variant short (@media (max-height: 820px));
+@custom-variant xshort (@media (max-height: 700px));
+
+/* ------------------------------------------------------------------ */
+/* Design tokens — white canvas, hot-pink brand, peach accents          */
+/* ------------------------------------------------------------------ */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /*
+   * Type scale — every UI text size comes from here (rem, so the user's browser font size is respected).
+   * Headings and big metrics are fluid with clamp(); body sizes stay fixed so small text never shrinks
+   * below readable on phones. Scene canvases (StepScenes, visuals/*) keep their own design-space px,
+   * because the whole canvas is scaled as one piece.
+   */
+  --text-eyebrow: 0.65rem; /* 10.4px — uppercase eyebrows, tiny tags */
+  --text-eyebrow--line-height: 1.25;
+  --text-micro: 0.6875rem; /* 11px — units, hints, badges */
+  --text-micro--line-height: 1.35;
+  --text-caption: 0.75rem; /* 12px — helper text, metadata */
+  --text-caption--line-height: 1.4;
+  --text-body-sm: 0.8125rem; /* 13px — descriptions, labels, info cards */
+  --text-body-sm--line-height: 1.45;
+  --text-body: 0.875rem; /* 14px — option labels, body copy */
+  --text-body--line-height: 1.45;
+  --text-lead: 0.9375rem; /* 15px — buttons, emphasised values, intro copy */
+  --text-lead--line-height: 1.45;
+  --text-heading: 1.0625rem; /* 17px — dialog and card titles */
+  --text-heading--line-height: 1.3;
+  --text-title: clamp(1.3rem, 0.95rem + 0.95vw, 1.7rem); /* 21→27px — the step question (h1) */
+  --text-title--line-height: 1.18;
+  --text-title-sm: 1.5rem; /* 24px — the step question on short desktop screens */
+  --text-title-sm--line-height: 1.18;
+  --text-section: clamp(1.375rem, 1.15rem + 0.6vw, 1.625rem); /* 22→26px — page section headings */
+  --text-section--line-height: 1.2;
+  --text-headline: clamp(1.625rem, 1.2rem + 1.4vw, 2.5rem); /* 26→40px — success / dashboard headings */
+  --text-headline--line-height: 1.12;
+  --text-metric: clamp(2.125rem, 1.7rem + 1.1vw, 2.75rem); /* 34→44px — hero numbers (duration, cycle day) */
+  --text-metric--line-height: 1;
+  --text-metric-sm: 1.5rem; /* 24px — inline numbers (BMI) */
+  --text-metric-sm--line-height: 1;
+
+  --color-canvas: #ffffff;
+  --color-canvas-warm: #fffdfe;
+
+  --color-ink: #292127;
+  --color-ink-soft: #766a70;
+  --color-ink-sub: #756970;
+  --color-ink-label: #4a3f45;
+  --color-ink-muted: #81737a;
+  --color-ink-small: #85737b; /* #8E7D84 darkened slightly for AA on white */
+  --color-ink-placeholder: #a99ba1;
+
+  --color-rose: #f34f97;
+  --color-rose-light: #ec6a9f;
+  --color-rose-bright: #ff5aa5;
+  --color-rose-deep: #d93d7f;
+  --color-rose-ink: #c93477; /* AA-contrast pink for small accent text */
+  --color-rose-icon: #e85b91;
+
+  --color-blush-50: #fff3f7;
+  --color-blush-100: #fff0f5;
+  --color-blush-150: #ffe5ef;
+  --color-blush-200: #f8dde7;
+  --color-blush-300: #f7d5e2;
+  --color-blush-400: #f7dce5;
+
+  --color-peach-50: #fff6f2;
+  --color-peach-border: #f6e0d7;
+  --color-apricot: #ffb59c;
+  --color-coral: #f2917f;
+  --color-coral-ink: #a85440;
+
+  --color-line: #f4e4ea;
+  --color-line-input: #f1dce4;
+  --color-line-step: #efdde5;
+
+  --radius-panel: 22px; /* the question card, the visual panel, dialogs */
+  --radius-card: 20px; /* primary cards: options, toggles, slider, gauge, progress */
+
+  /* Shadows are barely visible — borders do most of the separation. */
+  --shadow-glass: 0 2px 12px rgb(40 20 30 / 0.04);
+  --shadow-card-active: 0 4px 16px rgb(40 20 30 / 0.05);
+  --shadow-glow: 0 4px 12px rgb(244 90 155 / 0.12);
+  --shadow-glow-sm: 0 2px 10px rgb(40 20 30 / 0.04);
+  --shadow-feature: 0 2px 10px rgb(40 20 30 / 0.035);
+  --shadow-dialog: 0 8px 24px rgb(40 20 30 / 0.08);
+
+  /* Soft "blush" selection + hover system */
+  --color-select-bg: #fff4f8;
+  --color-select-border: #f3a8c5;
+  --color-select-icon: #e95a94;
+  --color-icon-bg: #fff0f5;
+  --color-hover-bg: #fff9fb;
+  --color-hover-border: #f2bbd0;
+  --color-card-border: #f2e8ed;
+  --color-button: #f45a9b;
+
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-float-slow: float 11s ease-in-out infinite;
+  --animate-spin-slow: spin 28s linear infinite;
+  --animate-spin-slower: spin 60s linear infinite;
+  --animate-spin-reverse: spin-reverse 40s linear infinite;
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.4s ease-out both;
+  --animate-slide-in-right: slide-in-right 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-slide-in-left: slide-in-left 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-scale-in: scale-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pulse-soft: pulse-soft 2.6s ease-in-out infinite;
+  --animate-glow: glow 3.2s ease-in-out infinite;
+  --animate-sway: sway 9s ease-in-out infinite;
+  --animate-shimmer: shimmer 3.5s linear infinite;
+  --animate-scan: scan 3.8s ease-in-out infinite;
+  --animate-dash: dash 3s ease-in-out infinite;
+  --animate-draw: draw 0.9s 0.25s cubic-bezier(0.65, 0, 0.35, 1) both;
+  --animate-notify: notify 6s ease-in-out infinite;
+  --animate-expand: expand 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* Guide character + scene choreography */
+  --animate-character-float: characterFloat 5s ease-in-out infinite;
+  --animate-character-point: characterPoint 0.7s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  --animate-visual-float: visualFloat 6s ease-in-out infinite;
+  --animate-drift: drift 7s ease-in-out infinite;
+  --animate-artwork-in: artworkIn 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-artwork-out: artworkOut 240ms ease-out both;
+  /* BMI variant swap on the same step: a slower, opacity-only crossfade (no transform on the artwork). */
+  --animate-artwork-fade-in: artworkFadeIn 650ms ease-in-out both;
+  --animate-artwork-fade-out: artworkOut 650ms ease-in-out both;
+  --animate-soft-pulse: softPulse 2.6s ease-in-out infinite;
+  --animate-hologram-rotate: hologramRotate 50s linear infinite;
+  --animate-card-appear: cardAppear 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-scene-in: sceneIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pop: pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-card-in: card-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-scan-y: scan-y 3.6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -12px, 0); }
+}
+@keyframes spin-reverse {
+  to { transform: rotate(-360deg); }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pulse-soft {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(243 79 151 / 0.12); }
+  50% { box-shadow: 0 0 0 5px rgb(243 79 151 / 0); }
+}
+@keyframes glow {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.06); }
+}
+@keyframes sway {
+  0%, 100% { transform: perspective(900px) rotateY(-14deg) rotateX(8deg); }
+  50% { transform: perspective(900px) rotateY(10deg) rotateX(4deg); }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+@keyframes scan {
+  0%, 100% { transform: translateY(0); opacity: 0.2; }
+  10%, 90% { opacity: 1; }
+  50% { transform: translateY(var(--scan-distance, 220px)); }
+}
+@keyframes dash {
+  from { stroke-dashoffset: 400; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes draw {
+  from { stroke-dashoffset: 60; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes notify {
+  0%, 8% { opacity: 0; transform: translateY(12px) scale(0.96); }
+  16%, 80% { opacity: 1; transform: none; }
+  92%, 100% { opacity: 0; transform: translateY(-6px) scale(0.98); }
+}
+/* Pure vertical float — the supplied artwork is never rotated, scaled or otherwise distorted. */
+@keyframes characterFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+/* A small "look over here" nudge towards the upper-right, where she points. */
+@keyframes characterPoint {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  45% { transform: translate(5px, -5px) rotate(0.8deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+@keyframes visualFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes artworkIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes artworkFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes artworkOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+/* Glass decor: slow vertical drift with a slight tilt; amplitude and tilt come from CSS variables. */
+@keyframes glassFloat {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50% { transform: translate3d(0, var(--gy, -6px), 0) rotate(var(--gr, 2deg)); }
+}
+@keyframes glassGlint {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.95; }
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes softPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(243 79 151 / 0.12); }
+  50% { box-shadow: 0 0 0 5px rgb(243 79 151 / 0); }
+}
+@keyframes hologramRotate {
+  to { transform: rotate(360deg); }
+}
+@keyframes cardAppear {
+  from { opacity: 0; transform: translateY(14px) scale(0.95); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes sceneIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes scan-y {
+  0%, 100% { transform: translateY(0); opacity: 0.25; }
+  12%, 88% { opacity: 1; }
+  50% { transform: translateY(var(--scan-distance, 300px)); }
+}
+@keyframes expand {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Reusable utilities                                                  */
+/* ------------------------------------------------------------------ */
+
+/* Premium frosted glass surface */
+@utility glass {
+  background-color: rgb(255 255 255 / 0.94);
+  border: 1px solid #f4e4ea;
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: var(--shadow-glass);
+}
+
+/* Lighter glass for nested surfaces */
+@utility glass-soft {
+  background-color: #ffffff;
+  border: 1px solid #f4e4ea;
+}
+
+@utility bg-brand {
+  background-image: linear-gradient(135deg, #f45a9b 0%, #f672ab 100%);
+}
+@utility bg-brand-mist {
+  background-image: linear-gradient(135deg, #ffdce9 0%, #ffe9de 100%);
+}
+
+@utility focus-ring {
+  outline: none;
+  &:focus-visible {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 5px rgb(243 79 151 / 0.5);
+  }
+}
+
+/* Hides the scrollbar while keeping the element scrollable (the Step 1 date wheel). */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+/* Soft fade at the top/bottom edge of a scroll area only while there is more to see (pure CSS). */
+@utility scroll-cue {
+  background:
+    linear-gradient(#fff 30%, rgb(255 255 255 / 0)) center top / 100% 28px no-repeat local,
+    linear-gradient(rgb(255 255 255 / 0), #fff 70%) center bottom / 100% 28px no-repeat local,
+    radial-gradient(farthest-side at 50% 0, rgb(243 79 151 / 0.16), transparent) center top / 100% 12px no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%, rgb(243 79 151 / 0.16), transparent) center bottom / 100% 12px no-repeat scroll;
+  background-color: #fff;
+}
+
+/*
+ * Distributes a step's content through the question card: the gap between logical groups
+ * (--step-gap, set from the card's spare height by useStepSpacing) grows on roomy steps, and any
+ * remaining space is shared above and below so the content sits balanced — never dumped at the top,
+ * never split far from related controls.
+ */
+@utility step-flow {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+  & > * {
+    display: flex;
+    flex-direction: column;
+    gap: var(--step-gap, 12px);
+  }
+  & > * > header {
+    margin-bottom: 0;
+  }
+  /* [class] lifts specificity above single-class margin utilities (mt-3 …) on the step's children. */
+  & > * > [class]:not(:first-child) {
+    margin-top: 0;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Range slider — pink → peach filled track, white thumb with rose ring */
+/* The filled portion is driven by the --fill custom property.          */
+/* ------------------------------------------------------------------ */
+@layer components {
+  .range-rose {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 44px;
+    background: transparent;
+    cursor: pointer;
+  }
+  .range-rose:focus {
+    outline: none;
+  }
+  .range-rose::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #f34f97 0%, #ff6fae var(--fill, 50%), #f8dde7 var(--fill, 50%), #f8dde7 100%);
+  }
+  .range-rose::-moz-range-track {
+    height: 8px;
+    border-radius: 999px;
+    background: #f8dde7;
+  }
+  .range-rose::-moz-range-progress {
+    height: 8px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #f34f97, #ff6fae);
+  }
+  .range-rose::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 26px;
+    height: 26px;
+    margin-top: -9px;
+    border-radius: 999px;
+    background: #fff;
+    border: 3px solid #f34f97;
+    box-shadow: 0 2px 6px rgb(40 20 30 / 0.1);
+    transition: transform 160ms ease-out, box-shadow 160ms ease-out;
+  }
+  .range-rose::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: #fff;
+    border: 3px solid #f34f97;
+    box-shadow: 0 2px 6px rgb(40 20 30 / 0.1);
+    transition: transform 160ms ease-out;
+  }
+  .range-rose:active::-webkit-slider-thumb {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 6px rgb(243 79 151 / 0.1), 0 2px 6px rgb(40 20 30 / 0.1);
+  }
+  .range-rose:active::-moz-range-thumb {
+    transform: scale(1.2);
+  }
+  /* Keyboard focus: the same white gap + 50% pink ring as the shared focus-ring utility. */
+  .range-rose:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 5px rgb(243 79 151 / 0.5), 0 2px 6px rgb(40 20 30 / 0.1);
+  }
+  .range-rose:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 5px rgb(243 79 151 / 0.5);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Base                                                                */
+/* ------------------------------------------------------------------ */
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* The app fills the viewport in both directions; nothing reserves space it does not use. */
+  html,
+  body,
+  #root {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+  }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  /* Keep focused fields clear of the sticky mobile navigation bar. */
+  @media (max-width: 639px) {
+    html {
+      scroll-padding-bottom: 112px;
+    }
+  }
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -3,9 +3,8 @@ import time
 from django.db import transaction
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from apps.cycles.access import PatientScopedView
+from apps.cycles.access import PatientScopedView, PublicView
 from apps.cycles.exceptions import CycleAPIError
 from apps.cycles.services.cycle_service import seed_first_period
 
@@ -65,9 +64,6 @@ class OnboardingProgressView(PatientScopedView):
         )
 
 
-class HealthView(APIView):
-    permission_classes = []
-    authentication_classes = []
-
+class HealthView(PublicView):
     def get(self, request):
         return Response({"status": "ok", "message": "onboarding service healthy"})

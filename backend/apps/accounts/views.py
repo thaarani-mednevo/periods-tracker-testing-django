@@ -3,10 +3,9 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import validate_email
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
+from apps.cycles.access import ProtectedView, PublicView
 from apps.onboarding.models import OnboardingProfile
 
 User = get_user_model()
@@ -34,9 +33,7 @@ def auth_payload(user, token=None):
     return data
 
 
-class PublicView(APIView):
-    authentication_classes = []
-    permission_classes = [AllowAny]
+
 
 
 class SignupView(PublicView):
@@ -81,16 +78,12 @@ class LoginView(PublicView):
         return Response(auth_payload(user, token))
 
 
-class MeView(APIView):
-    permission_classes = [IsAuthenticated]
-
+class MeView(ProtectedView):
     def get(self, request):
         return Response(auth_payload(request.user))
 
 
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
-
+class LogoutView(ProtectedView):
     def post(self, request):
         request.auth.delete()
         return Response(status=204)

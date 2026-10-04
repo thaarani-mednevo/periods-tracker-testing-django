@@ -1,5 +1,6 @@
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 
 from apps.onboarding.models import OnboardingProfile
@@ -7,13 +8,25 @@ from apps.onboarding.models import OnboardingProfile
 from .exceptions import CycleAPIError
 
 
-class PatientScopedView(APIView):
+class PublicView(APIView):
+    """Open endpoints (signup, login, health): no token needed."""
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+
+class ProtectedView(APIView):
+    """Login required. Every protected endpoint inherits from this class."""
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+class PatientScopedView(ProtectedView):
     """Every tracker endpoint belongs to the logged-in patient. The client never sends an id."""
 
-    permission_classes = [IsAuthenticated]  # authentication classes come from REST_FRAMEWORK settings
-
     def get_patient(self, request):
-        return request.user  # <-- the ONLY line to adapt to your real patient auth
+        return request.user
 
     def get_profile(self, request) -> OnboardingProfile:
         profile = OnboardingProfile.objects.filter(patient=self.get_patient(request)).first()

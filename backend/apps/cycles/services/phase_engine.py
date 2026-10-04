@@ -23,6 +23,7 @@ MENSTRUAL, FOLLICULAR, OVULATION, LUTEAL, UNKNOWN = (
     "menstrual", "follicular", "ovulation", "luteal", "unknown",
 )
 PROJECTION_HORIZON_CYCLES = 3  # future cycles shown on calendars; beyond that = unknown
+MAX_OVERDUE_PHASE_DAYS = 45    # later than this, stop guessing a phase and ask the user to log
 
 
 @dataclass(frozen=True)
@@ -130,7 +131,11 @@ def get_phase(target: date, w: CycleWindow | None) -> str:
         return OVULATION
     if w.next_start is None or target < w.next_start:
         return LUTEAL
-    if w.overdue_until is not None and target <= w.overdue_until:
+    if (
+        w.overdue_until is not None
+        and target <= w.overdue_until
+        and (target - w.next_start).days <= MAX_OVERDUE_PHASE_DAYS
+    ):
         return LUTEAL
     return UNKNOWN
 

@@ -13,7 +13,8 @@ from typing import Sequence
 
 # Data-sanity guards only (reject typos / duplicate taps), NOT prediction rules.
 MIN_PLAUSIBLE_CYCLE_DAYS = 15
-MAX_PLAUSIBLE_CYCLE_DAYS = 120
+MAX_PLAUSIBLE_CYCLE_DAYS = 45   # longer gaps are usually a missed log, not a real cycle
+DEFAULT_CYCLE_LENGTH = 28       # used only when there is no history and no onboarding answer
 HISTORY_WINDOW = 6            # most recent cycle lengths that describe "now"
 MIN_CYCLES_WITHOUT_PRIOR = 3  # below this the onboarding answer is blended in as a prior
 
@@ -57,7 +58,9 @@ def build_cycle_profile(
         observations.insert(0, float(stated_cycle_length))
         source = "history+onboarding" if observed else "onboarding"
     else:
-        source = "history" if observed else "none"
+        source = "history" if observed else "default"
+    if not observations:
+        observations.append(float(DEFAULT_CYCLE_LENGTH))
 
     observed_period_lengths = [p.length_days for p in periods if p.length_days]
     if observed_period_lengths:

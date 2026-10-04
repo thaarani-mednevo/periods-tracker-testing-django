@@ -26,7 +26,9 @@ def assess_confidence(profile: CycleProfile, overdue_days: int = 0) -> Confidenc
 
     if profile.sample_size == 0:
         level = 0
-        reasons.append("based_on_onboarding_only")
+        reasons.append(
+            "assumed_default_cycle_length" if profile.length_source == "default" else "based_on_onboarding_only"
+        )
     elif profile.variability is None:
         level = 1
         reasons.append("only_one_cycle_logged")

@@ -23,7 +23,7 @@ export interface CycleState {
     medianCycleLength: number | null;
     variability: number | null;
     typicalPeriodLength: number | null;
-    lengthSource: "history" | "history+onboarding" | "onboarding" | "none";
+    lengthSource: "history" | "history+onboarding" | "onboarding" | "default";
   };
 }
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CalendarDays, CalendarPlus, MessageCircle, NotebookPen, PencilLine, TrendingUp } from "lucide-react";
 import { useCycle } from "../../hooks/useCycle";
 import { submitOnboardingProfile } from "../../services/onboarding";
-import type { CycleState } from "../../services/cycle";
+import { localISODate, logPeriod, type CycleState } from "../../services/cycle";
 import type { OnboardingData } from "../../types";
 import { InfoCard } from "../../Elements/infoCard/InfoCard";
 import { secondaryBtn } from "../../Elements/navigationButtons/NavigationButtons";
@@ -18,6 +18,7 @@ function confidenceNote(state: CycleState): string | null {
   const r = state.confidence.reasons;
   if (r.includes("period_overdue")) return `Your period is ${state.overdueDays} ${state.overdueDays === 1 ? "day" : "days"} later than predicted. Log it when it starts and your predictions will update.`;
   if (r.includes("no_cycle_data")) return "Add your cycle length or log a couple of periods to get predictions.";
+  if (r.includes("assumed_default_cycle_length")) return "We're using a typical 28-day cycle until you add your cycle length or log a period.";
   if (r.includes("based_on_onboarding_only")) return "Predictions use the cycle length you entered. They get more accurate as you log periods.";
   if (r.includes("only_one_cycle_logged") || r.includes("few_cycles_logged")) return "Predictions are still learning from your first few cycles.";
   if (r.includes("moderate_cycle_variability") || r.includes("high_cycle_variability")) return "Your cycle length varies, so dates are shown as ranges.";
@@ -47,6 +48,20 @@ export function Dashboard({
   const [retrying, setRetrying] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
+  const [lateDismissed, setLateDismissed] = useState(false);
+  const [startingToday, setStartingToday] = useState(false);
+
+  const periodStartedToday = async () => {
+    setStartingToday(true);
+    try {
+      await logPeriod(localISODate());
+      cycle.refetch();
+    } catch {
+      openLogPeriod(); // e.g. a period is already logged close to today: let the user pick the date
+    } finally {
+      setStartingToday(false);
+    }
+  };
   const openLogPeriod = () => setLogOpen(true);
   const state = cycle.data;
 
@@ -143,7 +158,28 @@ export function Dashboard({
 
       {cycle.status === "ready" && state && (
         <div className="grid gap-5">
-          {note && <InfoCard>{note}</InfoCard>}
+          {state.isOverdue && !lateDismissed ? (
+            <InfoCard live>
+              <p>
+                Your last logged period started {state.period ? fmtDate(state.period.start) : "a while ago"}, and your
+                period is {state.overdueDays} {state.overdueDays === 1 ? "day" : "days"} later than predicted. Did you
+                have a period since then?
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button type="button" onClick={openLogPeriod} className={secondaryBtn}>
+                  Yes, add the date
+                </button>
+                <button type="button" onClick={periodStartedToday} disabled={startingToday} className={secondaryBtn}>
+                  {startingToday ? "Saving…" : "It started today"}
+                </button>
+                <button type="button" onClick={() => setLateDismissed(true)} className={secondaryBtn}>
+                  Not yet
+                </button>
+              </div>
+            </InfoCard>
+          ) : (
+            note && <InfoCard>{note}</InfoCard>
+          )}
           {View ? (
             <>
               <View
@@ -159,7 +195,9 @@ export function Dashboard({
             </>
           ) : (
             <InfoCard>
-              Not enough data yet to show your phase.{" "}
+              {state.isOverdue
+                ? "It's been a long time since your last logged period, so we can't estimate your phase."
+                : "Not enough data yet to show your phase."}{" "}
               <button type="button" onClick={openLogPeriod} className="font-semibold underline">
                 Log a period
               </button>
